@@ -13,6 +13,7 @@ void main() {
       // Login as pembeli
       await tester.enterText(find.byKey(const Key('loginUsername')), 'pembeli');
       await tester.enterText(find.byKey(const Key('loginPassword')), 'pembeli123');
+      await tester.ensureVisible(find.byKey(const Key('loginButton')));
       await tester.tap(find.byKey(const Key('loginButton')));
       await tester.pumpAndSettle();
 
