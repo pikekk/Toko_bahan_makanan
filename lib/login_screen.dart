@@ -64,7 +64,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => TokoPage(user: user),
+          builder: (context) => TokoPage(key: TokoPage.pageKey, user: user),
         ),
       );
     } else {
@@ -161,6 +161,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                               border: Border.all(color: Colors.grey.shade300),
                             ),
                             child: TextField(
+                              key: const Key('loginUsername'),
                               controller: _usernameController,
                               decoration: InputDecoration(
                                 labelText: 'Username',
@@ -180,6 +181,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                               border: Border.all(color: Colors.grey.shade300),
                             ),
                             child: TextField(
+                              key: const Key('loginPassword'),
                               controller: _passwordController,
                               decoration: InputDecoration(
                                 labelText: 'Password',
@@ -197,6 +199,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                             width: double.infinity,
                             height: 50,
                             child: ElevatedButton(
+                              key: const Key('loginButton'),
                               onPressed: _login,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF4CAF50),

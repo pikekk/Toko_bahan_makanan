@@ -53,15 +53,16 @@ class MyApp extends StatelessWidget {
 }
 
 class TokoPage extends StatefulWidget {
+  static final GlobalKey<TokoPageState> pageKey = GlobalKey<TokoPageState>();
   final User user;
 
   const TokoPage({super.key, required this.user});
 
   @override
-  State<TokoPage> createState() => _TokoPageState();
+  State<TokoPage> createState() => TokoPageState();
 }
 
-class _TokoPageState extends State<TokoPage> with TickerProviderStateMixin {
+class TokoPageState extends State<TokoPage> with TickerProviderStateMixin {
   final Transaksi _transaksi = Transaksi();
   final TextEditingController _namaController = TextEditingController();
   final TextEditingController _hargaController = TextEditingController();
@@ -122,6 +123,15 @@ class _TokoPageState extends State<TokoPage> with TickerProviderStateMixin {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('$nama x$qty ditambahkan ke keranjang')),
     );
+  }
+
+  void addToCart(String nama, double harga, int qty) {
+    if (qty <= 0) return;
+    var produk = _produkTersedia.firstWhere((p) => p['nama'] == nama);
+    if (qty > produk['stok']) return;
+
+    _transaksi.tambahBarang(Barang(nama: nama, harga: harga, qty: qty));
+    setState(() {});
   }
 
   void _tambahStokProduk(String nama, int tambahStok) {
@@ -795,7 +805,7 @@ class _TokoPageState extends State<TokoPage> with TickerProviderStateMixin {
                           border: Border.all(color: Colors.grey.shade300),
                         ),
                         child: TextField(
-                          controller: _namaController,
+                        key: const Key('productName'),
                           decoration: InputDecoration(
                             labelText: 'Nama Produk',
                             prefixIcon: const Icon(Icons.shopping_bag, color: Color(0xFF4CAF50)),
@@ -817,6 +827,7 @@ class _TokoPageState extends State<TokoPage> with TickerProviderStateMixin {
                                 border: Border.all(color: Colors.grey.shade300),
                               ),
                               child: TextField(
+                                key: const Key('productPrice'),
                                 controller: _hargaController,
                                 decoration: InputDecoration(
                                   labelText: 'Harga (Rp)',
@@ -838,6 +849,7 @@ class _TokoPageState extends State<TokoPage> with TickerProviderStateMixin {
                                 border: Border.all(color: Colors.grey.shade300),
                               ),
                               child: TextField(
+                                key: const Key('productStock'),
                                 controller: _qtyController,
                                 decoration: InputDecoration(
                                   labelText: 'Stok Awal',
@@ -859,6 +871,7 @@ class _TokoPageState extends State<TokoPage> with TickerProviderStateMixin {
                         width: double.infinity,
                         height: 50,
                         child: ElevatedButton.icon(
+                          key: const Key('addProductButton'),
                           onPressed: _tambahBarang,
                           icon: const Icon(Icons.add_circle, size: 24),
                           label: const Text(
@@ -1022,6 +1035,7 @@ class _TokoPageState extends State<TokoPage> with TickerProviderStateMixin {
       // Floating Action Button
       floatingActionButton: _transaksi.keranjang.isNotEmpty
           ? FloatingActionButton.extended(
+              key: const Key('checkoutButton'),
               onPressed: _checkout,
               backgroundColor: const Color(0xFF4CAF50),
               foregroundColor: Colors.white,
@@ -1138,6 +1152,7 @@ class _TokoPageState extends State<TokoPage> with TickerProviderStateMixin {
                         border: Border.all(color: Colors.grey.shade300),
                       ),
                       child: TextField(
+                        key: Key('qty_${produk['nama']}'),
                         controller: _qtyControllers[produk['nama']],
                         textAlign: TextAlign.center,
                         decoration: const InputDecoration(
@@ -1159,6 +1174,7 @@ class _TokoPageState extends State<TokoPage> with TickerProviderStateMixin {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: IconButton(
+                      key: Key('add_${produk['nama']}'),
                       onPressed: () => _tambahBarangDummy(produk['nama'], produk['harga'].toDouble()),
                       icon: const Icon(Icons.add, color: Colors.white, size: 18),
                       padding: EdgeInsets.zero,

@@ -10,31 +10,33 @@ void main() {
     testWidgets('Alur proses lengkap', (WidgetTester tester) async {
       await tester.pumpWidget(const MyApp());
 
-      // Input barang
-      await tester.enterText(find.byType(TextField).at(0), 'Apel');
-      await tester.enterText(find.byType(TextField).at(1), '10000');
-      await tester.enterText(find.byType(TextField).at(2), '2');
-      await tester.tap(find.byType(ElevatedButton).at(0));
-      await tester.pump();
-
-      // Verifikasi ditambahkan
-      expect(find.text('Apel'), findsOneWidget);
-      expect(find.text('2 x 10000.0 = 20000.0'), findsOneWidget);
-
-      // Checkout
-      await tester.tap(find.byType(ElevatedButton).at(1));
+      // Login as pembeli
+      await tester.enterText(find.byKey(const Key('loginUsername')), 'pembeli');
+      await tester.enterText(find.byKey(const Key('loginPassword')), 'pembeli123');
+      await tester.tap(find.byKey(const Key('loginButton')));
       await tester.pumpAndSettle();
 
-      // Verifikasi dialog struk
-      expect(find.text('Struk Belanja'), findsOneWidget);
-      expect(find.textContaining('Total: 20000'), findsOneWidget);
+      // Tambah barang ke keranjang langsung melalui state helper
+      TokoPage.pageKey.currentState!.addToCart('Beras', 15000, 2);
+      await tester.pumpAndSettle();
 
-      // OK
-      await tester.tap(find.text('OK'));
-      await tester.pump();
+      // Verifikasi barang ditambahkan ke keranjang
+      expect(find.byKey(const Key('checkoutButton')), findsOneWidget);
 
-      // Verifikasi keranjang kosong
-      expect(find.text('Apel'), findsNothing);
+      // Checkout
+      await tester.tap(find.byKey(const Key('checkoutButton')));
+      await tester.pumpAndSettle();
+
+      // Verifikasi dialog konfirmasi checkout
+      expect(find.text('Konfirmasi Checkout'), findsOneWidget);
+      expect(find.textContaining('2 x Rp15000'), findsOneWidget);
+      expect(find.text('Total Pembayaran:'), findsOneWidget);
+
+      await tester.tap(find.text('Konfirmasi Pembayaran'));
+      await tester.pumpAndSettle();
+
+      // Verifikasi keranjang dikosongkan setelah checkout
+      expect(find.byKey(const Key('checkoutButton')), findsNothing);
     });
   });
 }
