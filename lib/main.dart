@@ -1,5 +1,8 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'models/barang.dart';
 import 'models/transaksi.dart';
 import 'models/user.dart';
@@ -7,10 +10,30 @@ import 'login_screen.dart';
 
 // Global list produk tersedia
 List<Map<String, dynamic>> produkTersediaGlobal = [
-  {'nama': 'Beras', 'harga': 15000, 'stok': 50},
-  {'nama': 'Gula', 'harga': 12000, 'stok': 30},
-  {'nama': 'Minyak Goreng', 'harga': 25000, 'stok': 20},
-  {'nama': 'Telur', 'harga': 20000, 'stok': 100},
+  {
+    'nama': 'Beras',
+    'harga': 15000,
+    'stok': 50,
+    'imagePath': 'assets/images/beras.png',
+  },
+  {
+    'nama': 'Gula',
+    'harga': 12000,
+    'stok': 30,
+    'imagePath': 'assets/images/gula.png',
+  },
+  {
+    'nama': 'Minyak Goreng',
+    'harga': 25000,
+    'stok': 20,
+    'imagePath': 'assets/images/minyak_goreng.png',
+  },
+  {
+    'nama': 'Telur',
+    'harga': 20000,
+    'stok': 100,
+    'imagePath': 'assets/images/telur.png',
+  },
 ];
 
 // Global history transaksi
@@ -67,6 +90,9 @@ class TokoPageState extends State<TokoPage> with TickerProviderStateMixin {
   final TextEditingController _namaController = TextEditingController();
   final TextEditingController _hargaController = TextEditingController();
   final TextEditingController _qtyController = TextEditingController();
+  final ImagePicker _imagePicker = ImagePicker();
+  XFile? _pickedImage;
+  Uint8List? _pickedImageBytes;
   late AnimationController _fabAnimationController;
 
   // Produk tersedia yang bisa dibeli (global)
@@ -143,6 +169,29 @@ class TokoPageState extends State<TokoPage> with TickerProviderStateMixin {
     );
   }
 
+  Future<void> _pickProductImage() async {
+    try {
+      final picked = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+      );
+      if (picked == null) return;
+
+      final bytes = await picked.readAsBytes();
+      setState(() {
+        _pickedImage = picked;
+        _pickedImageBytes = bytes;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Gagal memilih gambar'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
+  }
+
   void _tambahBarang() {
     try {
       String nama = _namaController.text.trim();
@@ -166,7 +215,13 @@ class TokoPageState extends State<TokoPage> with TickerProviderStateMixin {
           ),
         );
       } else {
-        _produkTersedia.add({'nama': nama, 'harga': harga, 'stok': stok});
+        _produkTersedia.add({
+          'nama': nama,
+          'harga': harga,
+          'stok': stok,
+          if (_pickedImageBytes != null) 'imageBytes': _pickedImageBytes,
+          if (_pickedImage != null) 'imagePath': _pickedImage!.path,
+        });
         _qtyControllers[nama] = TextEditingController(text: '1');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -182,6 +237,8 @@ class TokoPageState extends State<TokoPage> with TickerProviderStateMixin {
       _namaController.clear();
       _hargaController.clear();
       _qtyController.clear();
+      _pickedImage = null;
+      _pickedImageBytes = null;
 
       setState(() {});
     } catch (e) {
@@ -749,7 +806,7 @@ class TokoPageState extends State<TokoPage> with TickerProviderStateMixin {
                   crossAxisCount: 2,
                   crossAxisSpacing: 16,
                   mainAxisSpacing: 16,
-                  childAspectRatio: 0.75,
+                  childAspectRatio: 0.7,
                 ),
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
@@ -864,6 +921,53 @@ class TokoPageState extends State<TokoPage> with TickerProviderStateMixin {
                           ),
                         ],
                       ),
+                      const SizedBox(height: 16),
+
+                      // Gambar Produk
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey.shade300),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                _pickedImage != null ? 'Gambar terpilih: ${_pickedImage!.name}' : 'Pilih gambar produk',
+                                style: TextStyle(
+                                  color: _pickedImage != null ? Colors.black87 : Colors.grey.shade600,
+                                ),
+                              ),
+                            ),
+                            TextButton(
+                              key: const Key('pickProductImage'),
+                              onPressed: _pickProductImage,
+                              child: const Text('Pilih'),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (_pickedImageBytes != null) ...[
+                        const SizedBox(height: 12),
+                        Container(
+                          height: 120,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.grey.shade300),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.memory(
+                              _pickedImageBytes!,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 24),
 
                       // Tombol Tambah
@@ -1065,19 +1169,45 @@ class TokoPageState extends State<TokoPage> with TickerProviderStateMixin {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Product Icon
+            // Product image or fallback icon
             Container(
               width: 60,
               height: 60,
               decoration: BoxDecoration(
-                color: const Color(0xFF4CAF50).withValues(alpha: 0.1),
+                color: const Color(0xFF4CAF50).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(
-                Icons.inventory_2,
-                size: 30,
-                color: Color(0xFF4CAF50),
-              ),
+              child: produk['imageBytes'] != null
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.memory(
+                        produk['imageBytes'],
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => const Icon(
+                          Icons.inventory_2,
+                          size: 30,
+                          color: Color(0xFF4CAF50),
+                        ),
+                      ),
+                    )
+                  : produk['imagePath'] != null && produk['imagePath'].toString().isNotEmpty
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.asset(
+                            produk['imagePath'],
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => const Icon(
+                              Icons.inventory_2,
+                              size: 30,
+                              color: Color(0xFF4CAF50),
+                            ),
+                          ),
+                        )
+                      : const Icon(
+                          Icons.inventory_2,
+                          size: 30,
+                          color: Color(0xFF4CAF50),
+                        ),
             ),
             const SizedBox(height: 12),
 
