@@ -13,12 +13,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _passwordController = TextEditingController();
   Role _selectedRole = Role.pembeli;
 
-  // Dummy users list (shared, but for simplicity, add here)
-  final List<User> _dummyUsers = [
-    User(username: 'admin', password: 'admin123', role: Role.admin),
-    User(username: 'pembeli', password: 'pembeli123', role: Role.pembeli),
-  ];
-
   void _register() {
     String username = _usernameController.text.trim();
     String password = _passwordController.text;
@@ -30,7 +24,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    bool exists = _dummyUsers.any((u) => u.username == username);
+    bool exists = appUsers.any((u) => u.username == username);
     if (exists) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Username sudah ada')),
@@ -39,7 +33,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
 
     User newUser = User(username: username, password: password, role: _selectedRole);
-    _dummyUsers.add(newUser);
+    appUsers.add(newUser);
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Registrasi berhasil, silakan login')),

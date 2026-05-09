@@ -145,6 +145,7 @@ class TokoPageState extends State<TokoPage> with TickerProviderStateMixin {
     }
 
     _transaksi.tambahBarang(Barang(nama: nama, harga: harga, qty: qty));
+    produk['stok'] -= qty;
     setState(() {});
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('$nama x$qty ditambahkan ke keranjang')),
@@ -157,6 +158,7 @@ class TokoPageState extends State<TokoPage> with TickerProviderStateMixin {
     if (qty > produk['stok']) return;
 
     _transaksi.tambahBarang(Barang(nama: nama, harga: harga, qty: qty));
+    produk['stok'] -= qty;
     setState(() {});
   }
 
@@ -1091,6 +1093,13 @@ class TokoPageState extends State<TokoPage> with TickerProviderStateMixin {
                                         icon: const Icon(Icons.delete, color: Colors.red, size: 20),
                                         onPressed: () {
                                           setState(() {
+                                            var produk = _produkTersedia.firstWhere(
+                                              (p) => p['nama'] == barang.nama,
+                                              orElse: () => {},
+                                            );
+                                            if (produk.isNotEmpty) {
+                                              produk['stok'] += barang.qty;
+                                            }
                                             _transaksi.keranjang.removeAt(index);
                                           });
                                         },

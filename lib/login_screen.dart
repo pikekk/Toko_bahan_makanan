@@ -17,12 +17,6 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
 
-  // Dummy users
-  final List<User> _dummyUsers = [
-    User(username: 'admin', password: 'admin123', role: Role.admin),
-    User(username: 'pembeli', password: 'pembeli123', role: Role.pembeli),
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -55,7 +49,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
     String username = _usernameController.text.trim();
     String password = _passwordController.text;
 
-    User? user = _dummyUsers.firstWhere(
+    User? user = appUsers.firstWhere(
       (u) => u.username == username && u.password == password,
       orElse: () => User(username: '', password: '', role: Role.pembeli),
     );
