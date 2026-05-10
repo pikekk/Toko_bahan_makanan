@@ -93,10 +93,18 @@ class TokoPageState extends State<TokoPage> with TickerProviderStateMixin {
   final ImagePicker _imagePicker = ImagePicker();
   XFile? _pickedImage;
   Uint8List? _pickedImageBytes;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
   late AnimationController _fabAnimationController;
 
   // Produk tersedia yang bisa dibeli (global)
-  List<Map<String, dynamic>> get _produkTersedia => produkTersediaGlobal;
+  List<Map<String, dynamic>> get _produkTersedia {
+    if (_searchQuery.isEmpty) return produkTersediaGlobal;
+    return produkTersediaGlobal.where((produk) {
+      final nama = produk['nama'].toString().toLowerCase();
+      return nama.contains(_searchQuery.toLowerCase());
+    }).toList();
+  }
 
   // History transaksi (global)
   List<Map<String, dynamic>> get _historyTransaksi => historyTransaksiGlobal;
@@ -112,6 +120,12 @@ class TokoPageState extends State<TokoPage> with TickerProviderStateMixin {
       vsync: this,
     );
 
+    _searchController.addListener(() {
+      setState(() {
+        _searchQuery = _searchController.text;
+      });
+    });
+
     // Inisialisasi controllers untuk qty tersedia
     for (var produk in _produkTersedia) {
       if (!_qtyControllers.containsKey(produk['nama'])) {
@@ -126,6 +140,7 @@ class TokoPageState extends State<TokoPage> with TickerProviderStateMixin {
     _namaController.dispose();
     _hargaController.dispose();
     _qtyController.dispose();
+    _searchController.dispose();
     for (var controller in _qtyControllers.values) {
       controller.dispose();
     }
@@ -787,6 +802,7 @@ class TokoPageState extends State<TokoPage> with TickerProviderStateMixin {
                         ],
                       ),
                       child: TextField(
+                        controller: _searchController,
                         decoration: InputDecoration(
                           hintText: 'Cari produk...',
                           prefixIcon: const Icon(Icons.search, color: Color(0xFF4CAF50)),

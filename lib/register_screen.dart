@@ -11,7 +11,6 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  Role _selectedRole = Role.pembeli;
 
   void _register() {
     String username = _usernameController.text.trim();
@@ -32,7 +31,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    User newUser = User(username: username, password: password, role: _selectedRole);
+    User newUser = User(username: username, password: password, role: Role.pembeli);
     appUsers.add(newUser);
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -75,21 +74,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     controller: _passwordController,
                     decoration: const InputDecoration(labelText: 'Password'),
                     obscureText: true,
-                  ),
-                  const SizedBox(height: 10),
-                  DropdownButton<Role>(
-                    value: _selectedRole,
-                    items: Role.values.map((role) {
-                      return DropdownMenuItem(
-                        value: role,
-                        child: Text(role == Role.admin ? 'Admin' : 'Pembeli'),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedRole = value!;
-                      });
-                    },
                   ),
                   const SizedBox(height: 20),
                   ElevatedButton(
