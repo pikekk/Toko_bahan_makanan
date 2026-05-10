@@ -232,7 +232,7 @@ class TokoPageState extends State<TokoPage> with TickerProviderStateMixin {
           ),
         );
       } else {
-        _produkTersedia.add({
+        produkTersediaGlobal.add({
           'nama': nama,
           'harga': harga,
           'stok': stok,
@@ -880,7 +880,8 @@ class TokoPageState extends State<TokoPage> with TickerProviderStateMixin {
                           border: Border.all(color: Colors.grey.shade300),
                         ),
                         child: TextField(
-                        key: const Key('productName'),
+                          key: const Key('productName'),
+                          controller: _namaController,
                           decoration: InputDecoration(
                             labelText: 'Nama Produk',
                             prefixIcon: const Icon(Icons.shopping_bag, color: Color(0xFF4CAF50)),
